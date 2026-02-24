@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audit Technique | Ghost Mentalité — Production</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: #000;
+  color: #fff;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+:root {
+  --gold: #C9A227;
+  --gold-light: #D4AF37;
+  --gold-dark: #8B6914;
+  --gold-dim: rgba(184,134,11,0.12);
+  --gold-border: rgba(184,134,11,0.3);
+  --gold-glow: rgba(212,175,55,0.2);
+  --bg: #000;
+  --bg-card: #0a0a0a;
+  --bg-elevated: #111;
+  --border: rgba(255,255,255,0.06);
+  --border-med: rgba(255,255,255,0.1);
+  --text-muted: #888;
+  --green: #22c55e;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+  --red: #ef4444;
+  --orange: #f97316;
+  --teal: #14b8a6;
+}
+
+/* SCROLL BAR */
+#scroll-progress {
+  position: fixed; top: 0; left: 0;
+  height: 3px; width: 0%;
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-light));
+  box-shadow: 0 0 20px var(--gold-glow);
+  z-index: 10000;
+  transition: width 0.05s linear;
+}
+
+/* NAV */
+nav {
+  position: fixed; top: 3px; left: 0; right: 0;
+  height: 60px; z-index: 9999;
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  background: rgba(0,0,0,0.8);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+}
+.nav-logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; }
+.nav-logo-icon {
+  width: 28px; height: 28px; background: var(--gold-dim);
+  border: 1px solid var(--gold-border); border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.nav-brand { font-weight: 700; font-size: 1rem; color: #fff; letter-spacing: -0.02em; }
+.nav-brand span { color: var(--gold); }
+.nav-links { display: flex; gap: 1.5rem; list-style: none; }
+.nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: color 0.2s; }
+.nav-links a:hover { color: var(--gold); }
+.badge-prod {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3);
+  color: #22c55e; padding: 0.25rem 0.75rem; border-radius: 100px;
+  font-size: 0.75rem; font-weight: 600;
+}
+.badge-prod::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: #22c55e;
+  animation: pulse-dot 1.5s infinite;
+}
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  padding: 8rem 2rem 6rem;
+  text-align: center;
+}
+.hero-bg { position: absolute; inset: 0; z-index: 0; }
+.aurora {
+  position: absolute; border-radius: 50%;
+  filter: blur(100px); pointer-events: none;
+}
+.aurora-1 {
+  width: 600px; height: 400px;
+  background: radial-gradient(ellipse, rgba(184,134,11,0.15), transparent 70%);
+  top: -10%; left: 20%;
+  animation: auroraFloat 12s ease-in-out infinite;
+}
+.aurora-2 {
+  width: 400px; height: 300px;
+  background: radial-gradient(ellipse, rgba(59,130,246,0.08), transparent 70%);
+  top: 30%; right: 10%;
+  animation: auroraFloat 16s ease-in-out infinite reverse;
+}
+.hero-content { position: relative; z-index: 2; max-width: 860px; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  background: var(--gold-dim); border: 1px solid var(--gold-border);
+  color: var(--gold); padding: 0.5rem 1.25rem; border-radius: 100px;
+  font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em;
+  margin-bottom: 2rem; text-transform: uppercase;
+}
+.hero-badge::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gold);
+  animation: pulse-dot 2s infinite;
+}
+.hero-title {
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  font-weight: 900; letter-spacing: -0.03em;
+  line-height: 1.05; margin-bottom: 1.5rem;
+}
+.hero-title .gold {
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold-light));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-subtitle { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+
+/* STAT GRID HERO */
+.hero-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1rem; margin-top: 3rem; max-width: 700px; margin-left: auto; margin-right: auto;
+}
+.hero-stat {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1rem 0.75rem; text-align: center;
+}
+.hero-stat .stat-value { font-size: 1.5rem; font-weight: 900; color: var(--gold); display: block; }
+.hero-stat .stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* VERIFIED BADGE */
+.verified-row {
+  display: flex; flex-wrap: wrap; gap: 0.75rem;
+  justify-content: center; margin-top: 2.5rem;
+}
+.verified-chip {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25);
+  color: #4ade80; padding: 0.35rem 0.9rem; border-radius: 100px;
+  font-size: 0.75rem; font-weight: 600;
+}
+.verified-chip::before { content: '✓ '; }
+
+/* SECTIONS */
+.section {
+  padding: 6rem 2rem;
+  border-top: 1px solid var(--border);
+}
+.section-dark { background: #030303; }
+.section-alt { background: #060606; }
+.section-gradient {
+  background: linear-gradient(180deg, #000 0%, #08050a 50%, #000 100%);
+}
+.container { max-width: 1100px; margin: 0 auto; }
+.section-number {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em;
+  color: var(--gold); text-transform: uppercase;
+  margin-bottom: 0.5rem; opacity: 0.8;
+}
+.section-label {
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em;
+  color: var(--text-muted); text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+.section-title {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 900; letter-spacing: -0.02em;
+  line-height: 1.15; margin-bottom: 1rem;
+}
+.section-title .gold {
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold-light));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.section-subtitle {
+  font-size: 1rem; color: var(--text-muted);
+  margin-bottom: 3rem; max-width: 680px;
+}
+
+/* GRIDS */
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+@media(max-width: 900px) { .grid-3 { grid-template-columns: 1fr 1fr; } .hero-stats { grid-template-columns: repeat(2,1fr); } }
+@media(max-width: 640px) { .grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr; } .hero-stats { grid-template-columns: repeat(2,1fr); } nav .nav-links { display: none; } }
+
+/* CARD */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.75rem;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.card:hover { border-color: var(--gold-border); transform: translateY(-3px); }
+.card-icon { font-size: 2rem; margin-bottom: 1rem; }
+.card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+.card p { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; }
+
+/* CODE BLOCK */
+.code-block {
+  background: #080808;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  line-height: 1.7;
+}
+.code-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.code-dots { display: flex; gap: 6px; }
+.code-dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-red { background: #ff5f57; }
+.dot-yellow { background: #febc2e; }
+.dot-green { background: #28c840; }
+.code-lang { font-size: 0.7rem; color: var(--text-muted); font-family: 'Inter', sans-serif; font-weight: 500; }
+.code-block pre { padding: 1.25rem 1.25rem; white-space: pre-wrap; word-break: break-word; }
+.sel { color: #e06c75; }
+.pr { color: #61afef; }
+.val { color: #98c379; }
+.fn { color: #c678dd; }
+.at { color: #e5c07b; }
+.nm { color: #d19a66; }
+.cm { color: #5c6370; font-style: italic; }
+.str { color: #98c379; }
+.key { color: #e06c75; }
+.num { color: #d19a66; }
+
+/* TECH TAG */
+.tech-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+.tag {
+  font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem;
+  border-radius: 6px; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.tag-gold { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-border); }
+.tag-green { background: rgba(34,197,94,0.1); color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+.tag-blue { background: rgba(59,130,246,0.1); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+.tag-purple { background: rgba(168,85,247,0.1); color: #c084fc; border: 1px solid rgba(168,85,247,0.25); }
+.tag-red { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+.tag-orange { background: rgba(249,115,22,0.1); color: #fb923c; border: 1px solid rgba(249,115,22,0.25); }
+.tag-teal { background: rgba(20,184,166,0.1); color: #2dd4bf; border: 1px solid rgba(20,184,166,0.25); }
+
+/* PIXEL CARD */
+.pixel-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex; align-items: flex-start; gap: 1rem;
+}
+.pixel-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.25rem; flex-shrink: 0;
+}
+.pixel-info h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.25rem; }
+.pixel-info .pixel-id { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text-muted); word-break: break-all; }
+.pixel-badge {
+  display: inline-block; font-size: 0.65rem; font-weight: 700;
+  padding: 0.15rem 0.5rem; border-radius: 4px; margin-top: 0.4rem;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+
+/* ANIM DEMO */
+.anim-demo {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  padding: 2rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.anim-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem; padding: 0.3rem 0.75rem;
+  background: rgba(184,134,11,0.08); border: 1px solid var(--gold-border);
+  border-radius: 6px; color: var(--gold);
+  cursor: default;
+  transition: background 0.2s;
+}
+.anim-chip:hover { background: rgba(184,134,11,0.2); }
+.anim-chip.blue { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.3); color: #60a5fa; }
+.anim-chip.green { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.3); color: #4ade80; }
+
+/* SEO SCORE */
+.seo-score-row {
+  display: flex; flex-wrap: wrap; gap: 1rem;
+  margin-bottom: 2rem;
+}
+.score-card {
+  flex: 1; min-width: 160px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.25rem;
+  text-align: center;
+}
+.score-number {
+  font-size: 2.5rem; font-weight: 900;
+  line-height: 1; margin-bottom: 0.25rem;
+}
+.score-label { font-size: 0.75rem; color: var(--text-muted); }
+
+/* TRACKING TABLE */
+.tracking-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
+.tracking-table th {
+  text-align: left; font-size: 0.7rem; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-muted);
+  padding: 0.6rem 1rem; border-bottom: 1px solid var(--border);
+}
+.tracking-table td {
+  padding: 0.85rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.03);
+  font-size: 0.85rem; vertical-align: middle;
+}
+.tracking-table tr:hover td { background: rgba(255,255,255,0.02); }
+.tracking-table .td-id { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--text-muted); }
+.check-icon { color: #4ade80; font-weight: 700; }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+footer strong { color: var(--gold); }
+
+/* ANIMATIONS */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+@keyframes auroraFloat {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(40px,-30px) scale(1.05); }
+  66% { transform: translate(-20px,20px) scale(0.95); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.fade-in-up.delay-1 { animation-delay: 0.1s; }
+.fade-in-up.delay-2 { animation-delay: 0.2s; }
+.fade-in-up.delay-3 { animation-delay: 0.3s; }
+.fade-in-up.delay-4 { animation-delay: 0.4s; }
+
+/* SCROLL REVEAL */
+.reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* COMPARISON TABLE */
+.compare-row {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 0.5rem;
+}
+.compare-label { flex: 1; font-size: 0.875rem; font-weight: 500; }
+.compare-old { color: var(--red); font-size: 0.8rem; text-decoration: line-through; opacity: 0.6; }
+.compare-new { color: #4ade80; font-size: 0.8rem; font-weight: 600; }
+
+/* HIGHLIGHT CARD */
+.highlight-card {
+  background: linear-gradient(135deg, rgba(184,134,11,0.08), rgba(184,134,11,0.03));
+  border: 1px solid var(--gold-border);
+  border-radius: 16px; padding: 2rem;
+  margin-top: 1.5rem;
+}
+.highlight-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--gold); }
+.highlight-card p { font-size: 0.875rem; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div id="scroll-progress"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon">🔍</div>
+    <span class="nav-brand">Audit <span>Ghost Mentalité</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#stack">Stack</a></li>
+    <li><a href="#seo">SEO</a></li>
+    <li><a href="#tracking">Tracking</a></li>
+    <li><a href="#animations">Animations</a></li>
+    <li><a href="#conversion">Conversion</a></li>
+    <li><a href="#performance">Performance</a></li>
+  </ul>
+  <div class="badge-prod">Production Live</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg">
+    <div class="aurora aurora-1"></div>
+    <div class="aurora aurora-2"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-badge fade-in-up">Audit Technique Complet</div>
+    <h1 class="hero-title fade-in-up delay-1">
+      Ghost Mentalité<br><span class="gold">Code Source — Production</span>
+    </h1>
+    <p class="hero-subtitle fade-in-up delay-2">
+      Analyse complète du code source du site de production : stack technique, stratégie SEO, arsenal de tracking, animations et architecture de conversion.
+    </p>
+
+    <div class="verified-row fade-in-up delay-3">
+      <span class="verified-chip">Astro Framework</span>
+      <span class="verified-chip">Tailwind CSS</span>
+      <span class="verified-chip">GSAP 3.12.5</span>
+      <span class="verified-chip">VanillaTilt</span>
+      <span class="verified-chip">6 Pixels Tracking</span>
+      <span class="verified-chip">JSON-LD Structured Data</span>
+      <span class="verified-chip">Klaviyo</span>
+    </div>
+
+    <div class="hero-stats fade-in-up delay-4">
+      <div class="hero-stat">
+        <span class="stat-value">6</span>
+        <span class="stat-label">Pixels actifs</span>
+      </div>
+      <div class="hero-stat">
+        <span class="stat-value">35+</span>
+        <span class="stat-label">Animations</span>
+      </div>
+      <div class="hero-stat">
+        <span class="stat-value">100%</span>
+        <span class="stat-label">SEO on-page</span>
+      </div>
+      <div class="hero-stat">
+        <span class="stat-value">Astro</span>
+        <span class="stat-label">Framework</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================
+     SECTION 1 — STACK TECHNIQUE
+============================================== -->
+<section class="section section-dark reveal" id="stack">
+  <div class="container">
+    <div class="section-number">01</div>
+    <div class="section-label">Infrastructure</div>
+    <h2 class="section-title">Stack <span class="gold">Technique</span></h2>
+    <p class="section-subtitle">Technologies détectées dans le code source de production. Chaque choix a un impact direct sur la performance et le SEO.</p>
+
+    <div class="grid-3">
+      <div class="card reveal">
+        <div class="card-icon">🚀</div>
+        <h3>Astro Framework</h3>
+        <p>Détecté via les attributs <code>data-astro-cid-*</code>, les composants <code>&lt;astro-island&gt;</code> et les fichiers <code>/_astro/</code>. Zero-JS par défaut, hydratation sélective.</p>
+        <div class="tech-tags">
+          <span class="tag tag-blue">SSG / SSR</span>
+          <span class="tag tag-blue">Islands Architecture</span>
+          <span class="tag tag-blue">client:load</span>
+        </div>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">🎨</div>
+        <h3>Tailwind CSS</h3>
+        <p>Compilé via Astro dans <code>/_astro/*.css</code>. Classes utilitaires visibles : <code>backdrop-blur-xl</code>, <code>bg-amber-400/5</code>, <code>blur-[200px]</code>.</p>
+        <div class="tech-tags">
+          <span class="tag tag-teal">JIT Compiler</span>
+          <span class="tag tag-teal">Purge CSS auto</span>
+        </div>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">⚡</div>
+        <h3>GSAP 3.12.5</h3>
+        <p>Chargé via CDN Cloudflare. Utilisé pour les animations au scroll avec <code>data-animate</code> (fade-up, zoom-in, flip-up...) et les effets stagger.</p>
+        <div class="tech-tags">
+          <span class="tag tag-green">ScrollTrigger</span>
+          <span class="tag tag-green">cdnjs 3.12.5</span>
+        </div>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">🎭</div>
+        <h3>VanillaTilt 1.8.0</h3>
+        <p>Effet 3D holographique sur les cartes (like Pokémon rare). Activé uniquement sur desktop (<code>window.innerWidth &gt; 768</code>) via <code>data-tilt</code>. Max glare: 0.1.</p>
+        <div class="tech-tags">
+          <span class="tag tag-purple">max: 6°</span>
+          <span class="tag tag-purple">glare: true</span>
+          <span class="tag tag-purple">scale: 1.01</span>
+        </div>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">🔤</div>
+        <h3>Inter via Google Fonts</h3>
+        <p>Police principale <code>Inter</code> en weights 400→900. Optimisé avec <code>preconnect</code> + <code>dns-prefetch</code> pour précharger avant le parsing du HTML.</p>
+        <div class="tech-tags">
+          <span class="tag tag-gold">preconnect</span>
+          <span class="tag tag-gold">dns-prefetch</span>
+          <span class="tag tag-gold">display=swap</span>
+        </div>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">📧</div>
+        <h3>Klaviyo Newsletter</h3>
+        <p>Script Klaviyo chargé async (<code>company_id: pk_e30db...</code>). Formulaire newsletter dans le footer avec intégration directe API Klaviyo.</p>
+        <div class="tech-tags">
+          <span class="tag tag-orange">Email Marketing</span>
+          <span class="tag tag-orange">async load</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top:2rem">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="code-dot dot-red"></span><span class="code-dot dot-yellow"></span><span class="code-dot dot-green"></span></div>
+          <span class="code-lang">HTML — Astro Island (PricingCheckout React)</span>
+        </div>
+        <pre><span class="cm">&lt;!-- Composant React hydraté côté client --&gt;</span>
+<span class="sel">&lt;astro-island</span>
+  <span class="pr">uid</span>=<span class="str">"TS5xc"</span>
+  <span class="pr">component-url</span>=<span class="str">"/_astro/PricingCheckout.WvJJ-zSl.js"</span>
+  <span class="pr">renderer-url</span>=<span class="str">"/_astro/client.CGL_0Mc_.js"</span>
+  <span class="pr">client</span>=<span class="str">"load"</span>
+  <span class="pr">opts</span>=<span class="str">'{"name":"PricingCheckout","value":true}'</span>
+<span class="sel">&gt;</span>
+  <span class="cm">&lt;!-- Contenu SSR ici (visible immédiatement) --&gt;</span>
+<span class="sel">&lt;/astro-island&gt;</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================
+     SECTION 2 — STRATÉGIE SEO
+============================================== -->
+<section class="section section-gradient reveal" id="seo">
+  <div class="container">
+    <div class="section-number">02</div>
+    <div class="section-label">Référencement</div>
+    <h2 class="section-title">Stratégie <span class="gold">SEO</span> Complète</h2>
+    <p class="section-subtitle">Double couche SEO : tags primaires pour Google + tags sociaux pour les réseaux. Plus données structurées JSON-LD pour les Rich Snippets.</p>
+
+    <div class="seo-score-row reveal">
+      <div class="score-card">
+        <div class="score-number" style="color: #4ade80;">✓</div>
+        <div class="score-label">lang="fr"</div>
+      </div>
+      <div class="score-card">
+        <div class="score-number" style="color: #4ade80;">✓</div>
+        <div class="score-label">Canonical</div>
+      </div>
+      <div class="score-card">
+        <div class="score-number" style="color: #4ade80;">✓</div>
+        <div class="score-label">Open Graph</div>
+      </div>
+      <div class="score-card">
+        <div class="score-number" style="color: #4ade80;">✓</div>
+        <div class="score-label">Twitter Card</div>
+      </div>
+      <div class="score-card">
+        <div class="score-number" style="color: #4ade80;">✓</div>
+        <div class="score-label">JSON-LD</div>
+      </div>
+      <div class="score-card">
+        <div class="score-number" style="color: #4ade80;">✓</div>
+        <div class="score-label">Preconnect</div>
+      </div>
+    </div>
+
+    <div class="grid-2 reveal">
+      <div>
+        <h3 style="margin-bottom:1rem; color: var(--gold);">Meta Tags Primaires</h3>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><span class="code-dot dot-red"></span><span class="code-dot dot-yellow"></span><span class="code-dot dot-green"></span></div>
+            <span class="code-lang">HTML — Head SEO</span>
+          </div>
+          <pre><span class="cm">&lt;!-- Langue déclarée --&gt;</span>
+<span class="sel">&lt;html</span> <span class="pr">lang</span>=<span class="str">"fr"</span> <span class="pr">class</span>=<span class="str">"dark"</span><span class="sel">&gt;</span>
+
+<span class="cm">&lt;!-- Meta SEO primaires --&gt;</span>
+<span class="sel">&lt;title&gt;</span>Ghost Mentalité - Passe à l'action<span class="sel">&lt;/title&gt;</span>
+<span class="sel">&lt;meta</span> <span class="pr">name</span>=<span class="str">"description"</span> <span class="pr">content</span>=<span class="str">"..."</span><span class="sel">&gt;</span>
+<span class="sel">&lt;meta</span> <span class="pr">name</span>=<span class="str">"keywords"</span> <span class="pr">content</span>=<span class="str">"club business,
+  groupe business, formation ecommerce..."</span><span class="sel">&gt;</span>
+<span class="sel">&lt;meta</span> <span class="pr">name</span>=<span class="str">"robots"</span>
+  <span class="pr">content</span>=<span class="str">"index, follow"</span><span class="sel">&gt;</span>
+<span class="sel">&lt;meta</span> <span class="pr">name</span>=<span class="str">"revisit-after"</span>
+  <span class="pr">content</span>=<span class="str">"7 days"</span><span class="sel">&gt;</span>
+<span class="sel">&lt;link</span> <span class="pr">rel</span>=<span class="str">"canonical"</span>
+  <span class="pr">href</span>=<span class="str">"https://ghost-mentalite.com"</span><span class="sel">&gt;</span></pre>
+        </div>
+      </div>
+      <div>
+        <h3 style="margin-bottom:1rem; color: var(--gold);">Open Graph + Twitter</h3>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><span class="code-dot dot-red"></span><span class="code-dot dot-yellow"></span><span class="code-dot dot-green"></span></div>
+            <span class="code-lang">HTML — Social Meta</span>
+          </div>
+          <pre><span class="cm">&lt;!-- Facebook / Open Graph --&gt;</span>
+<span class="sel">&lt;meta</span> <span class="pr">property</span>=<span class="str">"og:type"</span>
+  <span class="pr">content</span>=<span class="str">"website"</span><span class="sel">&gt;</span>
+<span class="sel">&lt;meta</span> <span class="pr">property</span>=<span class="str">"og:title"</span>
+  <span class="pr">content</span>=<span class="str">"Ghost Mentalité..."</span><span class="sel">&gt;</span>
+<span class="sel">&lt;meta</span> <span class="pr">property</span>=<span class="str">"og:image:width"</span>
+  <span class="pr">content</span>=<span class="str">"1200"</span><span class="sel">&gt;</span>
+<span class="sel">&lt;meta</span> <span class="pr">property</span>=<span class="str">"og:image:height"</span>
+  <span class="pr">content</span>=<span class="str">"630"</span><span class="sel">&gt;</span>
+<span class="cm">&lt;!-- Twitter Card --&gt;</span>
+<span class="sel">&lt;meta</span> <span class="pr">name</span>=<span class="str">"twitter:card"</span>
+  <span class="pr">content</span>=<span class="str">"summary_large_image"</span><span class="sel">&gt;</span>
+<span class="sel">&lt;meta</span> <span class="pr">property</span>=<span class="str">"og:locale"</span>
+  <span class="pr">content</span>=<span class="str">"fr_FR"</span><span class="sel">&gt;</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top:2rem">
+      <h3 style="margin-bottom:1rem; color: var(--gold);">JSON-LD Structured Data — Rich Snippets Google</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="code-dot dot-red"></span><span class="code-dot dot-yellow"></span><span class="code-dot dot-green"></span></div>
+          <span class="code-lang">JSON-LD — application/ld+json</span>
+        </div>
+        <pre>{
+  <span class="key">"@context"</span>: <span class="str">"https://schema.org"</span>,
+  <span class="key">"@type"</span>: <span class="str">"Organization"</span>,          <span class="cm">// Entité = Organisation</span>
+  <span class="key">"name"</span>: <span class="str">"Ghost Mentalité"</span>,
+  <span class="key">"url"</span>: <span class="str">"https://ghost-mentalite.com"</span>,
+  <span class="key">"sameAs"</span>: [<span class="str">"https://discord.gg/focus-business"</span>],
+  <span class="key">"offers"</span>: {
+    <span class="key">"@type"</span>: <span class="str">"Offer"</span>,
+    <span class="key">"price"</span>: <span class="str">"9.90"</span>,               <span class="cm">// Prix affiché dans Google</span>
+    <span class="key">"priceCurrency"</span>: <span class="str">"EUR"</span>,
+    <span class="key">"availability"</span>: <span class="str">"https://schema.org/InStock"</span>
+  }
+}</pre>
+      </div>
+    </div>
+
+    <div class="highlight-card reveal" style="margin-top:2rem">
+      <h4>⚠️ Note technique : revisit-after</h4>
+      <p>La balise <code>meta name="revisit-after" content="7 days"</code> est présente dans le code. À noter : Google ignore cet attribut depuis des années (il n'a jamais été un standard officiel). Il est inoffensif mais sans effet sur le crawl. Les moteurs de recherche modernes décident eux-mêmes de la fréquence de re-crawl.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================
+     SECTION 3 — ARSENAL TRACKING
+============================================== -->
+<section class="section section-dark reveal" id="tracking">
+  <div class="container">
+    <div class="section-number">03</div>
+    <div class="section-label">Analytics & Retargeting</div>
+    <h2 class="section-title">Arsenal <span class="gold">Tracking 360°</span></h2>
+    <p class="section-subtitle">6 pixels actifs pour une couverture totale de tous les canaux publicitaires. Plus une fonction unifiée <code>trackAddToCart()</code> qui déclenche les 5 pixels simultanément.</p>
+
+    <div class="grid-2 reveal">
+      <div class="pixel-card">
+        <div class="pixel-icon" style="background:rgba(24,119,242,0.15)">📘</div>
+        <div class="pixel-info">
+          <h4>Facebook / Meta Pixel</h4>
+          <div class="pixel-id">ID: 26364309749823828</div>
+          <div class="pixel-id">Events: PageView, AddToCart</div>
+          <span class="pixel-badge" style="background:rgba(24,119,242,0.15);color:#60a5fa">Meta Ads</span>
+          <span class="check-icon"> ✓</span>
+        </div>
+      </div>
+      <div class="pixel-card">
+        <div class="pixel-icon" style="background:rgba(254,44,85,0.15)">🎵</div>
+        <div class="pixel-info">
+          <h4>TikTok Pixel</h4>
+          <div class="pixel-id">ID: D5PCBC3C77UDCU1J2LHG</div>
+          <div class="pixel-id">Events: page(), AddToCart</div>
+          <span class="pixel-badge" style="background:rgba(254,44,85,0.15);color:#f87171">TikTok Ads</span>
+          <span class="check-icon"> ✓</span>
+        </div>
+      </div>
+      <div class="pixel-card">
+        <div class="pixel-icon" style="background:rgba(255,252,0,0.1)">👻</div>
+        <div class="pixel-info">
+          <h4>Snapchat Pixel</h4>
+          <div class="pixel-id">ID: 827ae1c2-5cf7-44db-9761-0a858ab2e2e6</div>
+          <div class="pixel-id">Events: PAGE_VIEW, ADD_CART</div>
+          <span class="pixel-badge" style="background:rgba(255,252,0,0.1);color:#fbbf24">Snap Ads</span>
+          <span class="check-icon"> ✓</span>
+        </div>
+      </div>
+      <div class="pixel-card">
+        <div class="pixel-icon" style="background:rgba(234,67,53,0.15)">📊</div>
+        <div class="pixel-info">
+          <h4>Google Analytics GA4</h4>
+          <div class="pixel-id">ID: G-RPD4NC20SF</div>
+          <div class="pixel-id">Events: add_to_cart (currency, value, items)</div>
+          <span class="pixel-badge" style="background:rgba(234,67,53,0.15);color:#f87171">GA4</span>
+          <span class="check-icon"> ✓</span>
+        </div>
+      </div>
+      <div class="pixel-card">
+        <div class="pixel-icon" style="background:rgba(59,130,246,0.12)">🏷️</div>
+        <div class="pixel-info">
+          <h4>Google Tag Manager</h4>
+          <div class="pixel-id">ID: GTM-MX4MF267</div>
+          <div class="pixel-id">Conteneur centralisé de tags</div>
+          <span class="pixel-badge" style="background:rgba(59,130,246,0.12);color:#60a5fa">GTM</span>
+          <span class="check-icon"> ✓</span>
+        </div>
+      </div>
+      <div class="pixel-card">
+        <div class="pixel-icon" style="background:rgba(168,85,247,0.12)">👁️</div>
+        <div class="pixel-info">
+          <h4>Microsoft Clarity</h4>
+          <div class="pixel-id">ID: v50k153mjn</div>
+          <div class="pixel-id">Heatmaps + session recording</div>
+          <span class="pixel-badge" style="background:rgba(168,85,247,0.12);color:#c084fc">UX Analytics</span>
+          <span class="check-icon"> ✓</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top:2rem">
+      <h3 style="margin-bottom:1rem; color: var(--gold);">Fonction unifiée trackAddToCart()</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="code-dot dot-red"></span><span class="code-dot dot-yellow"></span><span class="code-dot dot-green"></span></div>
+          <span class="code-lang">JavaScript — Tracking unifié (5 pixels d'un coup)</span>
+        </div>
+        <pre><span class="fn">function</span> <span class="fn">trackAddToCart</span>() {
+  <span class="cm">// Google Analytics GA4</span>
+  <span class="fn">gtag</span>(<span class="str">'event'</span>, <span class="str">'add_to_cart'</span>, {
+    <span class="pr">currency</span>: <span class="str">'EUR'</span>, <span class="pr">value</span>: <span class="num">9.90</span>,
+    <span class="pr">items</span>: [{ <span class="pr">item_name</span>: <span class="str">'Focus Business Membership'</span>, <span class="pr">price</span>: <span class="num">9.90</span> }]
+  });
+  <span class="cm">// Meta Pixel</span>
+  <span class="fn">fbq</span>(<span class="str">'track'</span>, <span class="str">'AddToCart'</span>, { <span class="pr">value</span>: <span class="num">9.90</span>, <span class="pr">currency</span>: <span class="str">'EUR'</span> });
+  <span class="cm">// TikTok Pixel</span>
+  <span class="fn">ttq.track</span>(<span class="str">'AddToCart'</span>, { <span class="pr">value</span>: <span class="num">9.90</span> });
+  <span class="cm">// Snapchat</span>
+  <span class="fn">snaptr</span>(<span class="str">'track'</span>, <span class="str">'ADD_CART'</span>, { <span class="pr">price</span>: <span class="num">9.90</span> });
+  <span class="cm">// Microsoft Clarity</span>
+  <span class="fn">clarity</span>(<span class="str">'set'</span>, <span class="str">'AddToCart'</span>, <span class="str">'true'</span>);
+}</pre>
+      </div>
+    </div>
+
+    <div class="highlight-card reveal" style="margin-top:1.5rem">
+      <h4>Système d'affiliation via sessionStorage</h4>
+      <p>Un script récupère le paramètre <code>?ref=</code> dans l'URL et le stocke dans <code>sessionStorage</code> sous la clé <code>focus_ref</code>. Permet de tracker les affiliés sur toute la session sans cookies, en accord avec les règles RGPD.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================
+     SECTION 4 — ANIMATIONS
+============================================== -->
+<section class="section section-alt reveal" id="animations">
+  <div class="container">
+    <div class="section-number">04</div>
+    <div class="section-label">Effets visuels</div>
+    <h2 class="section-title">Architecture <span class="gold">Animations</span></h2>
+    <p class="section-subtitle">3 couches d'animation : CSS pur (@keyframes), GSAP ScrollTrigger, et JavaScript pur pour les données live simulées.</p>
+
+    <div class="anim-demo reveal">
+      <span class="anim-chip">goldShine</span>
+      <span class="anim-chip">auroraFloat</span>
+      <span class="anim-chip">pulse-dot</span>
+      <span class="anim-chip">marquee-track</span>
+      <span class="anim-chip">fadeInUp</span>
+      <span class="anim-chip">particle-float</span>
+      <span class="anim-chip blue">GSAP fade-up</span>
+      <span class="anim-chip blue">GSAP fade-down</span>
+      <span class="anim-chip blue">GSAP zoom-in</span>
+      <span class="anim-chip blue">GSAP flip-up</span>
+      <span class="anim-chip blue">GSAP fade-scale</span>
+      <span class="anim-chip blue">GSAP stagger</span>
+      <span class="anim-chip green">setInterval Shopify</span>
+      <span class="anim-chip green">setInterval Bitcoin</span>
+      <span class="anim-chip green">setInterval TikTok</span>
+      <span class="anim-chip green">setInterval Revolut</span>
+      <span class="anim-chip green">setInterval Stripe</span>
+      <span class="anim-chip green">Terminal typing</span>
+      <span class="anim-chip green">Discord talking</span>
+      <span class="anim-chip">speaking-wave</span>
+      <span class="anim-chip">VanillaTilt 3D</span>
+    </div>
+
+    <div class="grid-2 reveal" style="margin-top:2rem">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="code-dot dot-red"></span><span class="code-dot dot-yellow"></span><span class="code-dot dot-green"></span></div>
+          <span class="code-lang">GSAP — Animations scroll (data-animate)</span>
+        </div>
+        <pre><span class="cm">// Types d'animations disponibles</span>
+<span class="nm">animationTypes</span> = {
+  <span class="str">'fade-up'</span>:    { <span class="pr">transform</span>: <span class="str">'translateY(60px)'</span>, <span class="pr">opacity</span>: <span class="str">'0'</span> },
+  <span class="str">'fade-down'</span>:  { <span class="pr">transform</span>: <span class="str">'translateY(-60px)'</span>, <span class="pr">opacity</span>: <span class="str">'0'</span> },
+  <span class="str">'zoom-in'</span>:    { <span class="pr">transform</span>: <span class="str">'scale(0.5)'</span>, <span class="pr">opacity</span>: <span class="str">'0'</span> },
+  <span class="str">'flip-up'</span>:    { <span class="pr">transform</span>: <span class="str">'rotateX(30deg)'</span>, <span class="pr">opacity</span>: <span class="str">'0'</span> },
+  <span class="str">'fade-scale'</span>: { <span class="pr">transform</span>: <span class="str">'scale(0.8)'</span>, <span class="pr">opacity</span>: <span class="str">'0'</span> },
+};
+
+<span class="cm">// Déclenchement via IntersectionObserver</span>
+<span class="cm">// Usage dans le HTML :</span>
+<span class="cm">// &lt;h2 data-animate="zoom-in" data-delay="0.4" data-duration="1"&gt;</span></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="code-dot dot-red"></span><span class="code-dot dot-yellow"></span><span class="code-dot dot-green"></span></div>
+          <span class="code-lang">JS — Simulation données live Hero</span>
+        </div>
+        <pre><span class="cm">// Shopify : +X€ toutes les 3s</span>
+<span class="fn">setInterval</span>(() => {
+  b += Math.<span class="fn">floor</span>(Math.<span class="fn">random</span>() * <span class="num">150</span>) + <span class="num">50</span>;
+  shopVal.<span class="pr">textContent</span> = b.<span class="fn">toLocaleString</span>() + <span class="str">' €'</span>;
+}, <span class="num">3000</span>);
+
+<span class="cm">// Bitcoin : prix aléatoire autour de $98,420</span>
+<span class="fn">setInterval</span>(() => {
+  <span class="nm">const</span> price = <span class="num">98420</span> + (Math.<span class="fn">random</span>() - <span class="num">0.5</span>) * <span class="num">800</span>;
+  btcVal.<span class="pr">textContent</span> = <span class="str">'$'</span> + price.<span class="fn">toLocaleString</span>();
+}, <span class="num">2500</span>);
+
+<span class="cm">// ⚡ Pause auto si hors viewport (IntersectionObserver)</span>
+<span class="cm">// ⚡ Pause auto si onglet caché (visibilitychange)</span></pre>
+      </div>
+    </div>
+
+    <div class="grid-2 reveal" style="margin-top:1.5rem">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="code-dot dot-red"></span><span class="code-dot dot-yellow"></span><span class="code-dot dot-green"></span></div>
+          <span class="code-lang">CSS — Marquee infini (Arsenal + Trustpilot)</span>
+        </div>
+        <pre><span class="cm">/* Contenu dupliqué en JS pour boucle parfaite */</span>
+<span class="cm">/* data-marquee="row1" → normal */</span>
+<span class="cm">/* data-marquee="row2" → reverse (sens opposé) */</span>
+
+<span class="sel">.marquee-track</span> {
+  <span class="pr">animation</span>: <span class="val">marqueeScroll 30s linear infinite</span>;
+}
+<span class="sel">.marquee-track.reverse</span> {
+  <span class="pr">animation-direction</span>: <span class="val">reverse</span>;
+}</pre>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="code-dot dot-red"></span><span class="code-dot dot-yellow"></span><span class="code-dot dot-green"></span></div>
+          <span class="code-lang">JS — Discord phone : rotation "talking"</span>
+        </div>
+        <pre><span class="cm">// Un user au hasard "parle" toutes les 3-5s</span>
+<span class="fn">setInterval</span>(() => {
+  <span class="nm">const</span> users = <span class="fn">querySelectorAll</span>(<span class="str">'.voice-user'</span>);
+  <span class="cm">// Retire .talking de tous</span>
+  users.<span class="fn">forEach</span>(u => u.<span class="pr">classList</span>.<span class="fn">remove</span>(<span class="str">'talking'</span>));
+  <span class="cm">// Donne .talking à un user random</span>
+  <span class="nm">const</span> idx = Math.<span class="fn">floor</span>(Math.<span class="fn">random</span>() * users.length);
+  users[idx].<span class="pr">classList</span>.<span class="fn">add</span>(<span class="str">'talking'</span>);
+}, <span class="num">3000</span>);</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================
+     SECTION 5 — ARCHITECTURE CONVERSION
+============================================== -->
+<section class="section section-dark reveal" id="conversion">
+  <div class="container">
+    <div class="section-number">05</div>
+    <div class="section-label">Business</div>
+    <h2 class="section-title">Architecture <span class="gold">Conversion</span></h2>
+    <p class="section-subtitle">Chaque élément du site est conçu pour pousser à l'achat. De la preuve sociale aux notifications de vente en temps réel.</p>
+
+    <div class="grid-3 reveal">
+      <div class="card">
+        <div class="card-icon">⭐</div>
+        <h3>Trustpilot 4.7/5</h3>
+        <p>Widget Trustpilot avec 46 avis, affiché en badge dans la section pricing ET dans un marquee double sens (normal + reverse) pour créer un effet de flux continu.</p>
+        <div class="tech-tags"><span class="tag tag-green">Social Proof</span><span class="tag tag-green">46 avis</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💰</div>
+        <h3>Pricing Checkout (Astro Island)</h3>
+        <p>Le composant de paiement est une Astro Island React hydratée côté client (<code>client:load</code>). Prix affiché : 9,90€/mois avec badge Trustpilot intégré.</p>
+        <div class="tech-tags"><span class="tag tag-blue">React</span><span class="tag tag-blue">client:load</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔔</div>
+        <h3>Notifications Live</h3>
+        <p>7 cartes hero (Shopify, Bitcoin, Stripe, Revolut, Qonto, TikTok, YouTube) affichent des données simulées en temps réel avec <code>show-notif</code> rotative toutes les 3 secondes.</p>
+        <div class="tech-tags"><span class="tag tag-orange">FOMO</span><span class="tag tag-orange">Urgency</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3>Floating Badge</h3>
+        <p>Badge flottant "Ce site ? 0 ligne de code" visible jusqu'à ce que l'utilisateur atteigne la section pricing (IntersectionObserver). Disparaît sur l'ancre #pricing.</p>
+        <div class="tech-tags"><span class="tag tag-gold">CTA Persistant</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">❓</div>
+        <h3>FAQ Accordion</h3>
+        <p>4 questions clés avec accordion JavaScript natif. Click sur une question → active la réponse et ferme les autres. Gestion via <code>classList.toggle('active')</code>.</p>
+        <div class="tech-tags"><span class="tag tag-purple">UX</span><span class="tag tag-purple">Vanilla JS</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <h3>Discord Phone Mockup</h3>
+        <p>30 membres affichés dans un faux écran Discord. Un user "parle" aléatoirement avec animation CSS <code>.talking</code> + barres de son oscillantes + 4 bulles flottantes autour du téléphone.</p>
+        <div class="tech-tags"><span class="tag tag-orange">FOMO</span><span class="tag tag-orange">Networking</span></div>
+      </div>
+    </div>
+
+    <div class="highlight-card reveal" style="margin-top:2rem">
+      <h4>Stratégie FOMO (Fear Of Missing Out)</h4>
+      <p>Le site utilise 3 techniques combinées : (1) données live simulées sur les cartes hero pour créer un sentiment d'activité intense, (2) Discord phone avec 30 membres en live vocal pour prouver la communauté active, (3) Trustpilot 4.7/5 en double affichage (badge pricing + marquee avis) pour la réassurance. Résultat : le visiteur perçoit une activité en temps réel même si c'est simulé.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================
+     SECTION 6 — PERFORMANCE
+============================================== -->
+<section class="section section-gradient reveal" id="performance">
+  <div class="container">
+    <div class="section-number">06</div>
+    <div class="section-label">Optimisation</div>
+    <h2 class="section-title">Performance & <span class="gold">Optimisation</span></h2>
+    <p class="section-subtitle">Plusieurs systèmes en place pour ne jamais ralentir le site, même avec des dizaines d'animations actives.</p>
+
+    <div class="grid-2 reveal">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="code-dot dot-red"></span><span class="code-dot dot-yellow"></span><span class="code-dot dot-green"></span></div>
+          <span class="code-lang">JS — FocusPerf : Pause animations hors viewport</span>
+        </div>
+        <pre><span class="nm">window.FocusPerf</span> = {
+  <span class="pr">intervals</span>: <span class="fn">new Map</span>(),
+  <span class="pr">observers</span>: <span class="fn">new Map</span>(),
+
+  <span class="fn">createSmartInterval</span>(sectionId, callback, delay) {
+    <span class="nm">const</span> section = <span class="fn">getElementById</span>(sectionId);
+    <span class="nm">const</span> observer = <span class="fn">new IntersectionObserver</span>((entries) => {
+      <span class="cm">// Start interval quand visible</span>
+      <span class="cm">// Stop interval quand hors écran</span>
+      <span class="cm">// → Économise batterie mobile</span>
+    }, { <span class="pr">rootMargin</span>: <span class="str">'50px'</span> });
+  }
+};</pre>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="code-dot dot-red"></span><span class="code-dot dot-yellow"></span><span class="code-dot dot-green"></span></div>
+          <span class="code-lang">JS — Pause onglet inactif + Anti-flash theme</span>
+        </div>
+        <pre><span class="cm">// Pause toutes animations si onglet caché</span>
+document.<span class="fn">addEventListener</span>(<span class="str">'visibilitychange'</span>, () => {
+  <span class="nm">if</span> (document.hidden) {
+    FocusPerf.intervals.<span class="fn">forEach</span>(id => <span class="fn">clearInterval</span>(id));
+    <span class="cm">// Pause CSS via custom property</span>
+    document.body.style.<span class="fn">setProperty</span>(
+      <span class="str">'--global-animation-state'</span>, <span class="str">'paused'</span>
+    );
+  }
+});
+
+<span class="cm">// Anti-flash mode sombre/clair</span>
+<span class="cm">// Script en &lt;head&gt; (avant render) :</span>
+<span class="nm">const</span> theme = localStorage.<span class="fn">getItem</span>(<span class="str">'focus-theme'</span>) || <span class="str">'dark'</span>;
+document.<span class="pr">documentElement</span>.<span class="pr">classList</span>.<span class="fn">toggle</span>(<span class="str">'dark'</span>, theme === <span class="str">'dark'</span>);</pre>
+      </div>
+    </div>
+
+    <div class="grid-3 reveal" style="margin-top:2rem">
+      <div class="card">
+        <div class="card-icon">🔋</div>
+        <h3>Smart Intervals</h3>
+        <p>Tous les <code>setInterval()</code> sont gérés via un <code>IntersectionObserver</code> par section. Stop si hors écran, restart au scroll. Économie de batterie mobile.</p>
+        <div class="tech-tags"><span class="tag tag-green">Battery Saver</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🖼️</div>
+        <h3>Lazy Loading Images</h3>
+        <p>Attribut <code>loading="lazy"</code> sur les images non critiques. Les avatars Trustpilot (<code>i.pravatar.cc</code>) et la voiture LeBonCoin sont chargés à la demande.</p>
+        <div class="tech-tags"><span class="tag tag-blue">CLS 0</span><span class="tag tag-blue">LCP+</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3>will-change</h3>
+        <p>Propriété CSS <code>will-change: transform, opacity</code> appliquée sur tous les éléments animés via GSAP. Crée un layer GPU dédié pour chaque animation.</p>
+        <div class="tech-tags"><span class="tag tag-gold">GPU Layer</span><span class="tag tag-gold">60fps</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>Audit technique produit par <strong>Zeno</strong> — Code source analysé : <strong>ghost-mentalite.com</strong></p>
+  <p style="margin-top:0.5rem; color:#444">Stack : Astro · Tailwind · GSAP 3.12.5 · VanillaTilt · 6 Pixels · JSON-LD</p>
+</footer>
+
+<script>
+// Scroll progress bar
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY;
+  const total = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('scroll-progress').style.width = (scrolled / total * 100) + '%';
+}, { passive: true });
+
+// Reveal on scroll
+const revealEls = document.querySelectorAll('.reveal');
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+revealEls.forEach(el => revealObs.observe(el));
+</script>
+</body>
+</html>
