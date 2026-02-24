@@ -1129,15 +1129,17 @@ revealEls.forEach(el => revealObs.observe(el));
 // Password gate
 (function(){
   var gate = document.getElementById('ghost-gate');
-  if(localStorage.getItem('ghost_access')==='ghost2026'){ gate.style.display='none'; return; }
+  if(localStorage.getItem('ghost_access')==='1'){ gate.style.display='none'; return; }
   document.getElementById('gate-input').addEventListener('keydown',function(e){ if(e.key==='Enter') checkGate(); });
 })();
-function checkGate(){
+async function checkGate(){
   var val = document.getElementById('gate-input').value.trim();
   var err = document.getElementById('gate-error');
   var inp = document.getElementById('gate-input');
-  if(val==='ghost2026'){
-    localStorage.setItem('ghost_access','ghost2026');
+  var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(val));
+  var hash = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(hash==='e23fbdde6bce9c5d6f08d338c6fbbd04e1d8d77c193addc02188a0c4e7d7f10c'){
+    localStorage.setItem('ghost_access','1');
     document.getElementById('ghost-gate').style.display='none';
   } else {
     err.textContent='Mot de passe incorrect.';
