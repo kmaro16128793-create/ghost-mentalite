@@ -39,6 +39,27 @@ body {
   --teal: #14b8a6;
 }
 
+/* ─── LIGHT MODE ─── */
+html:not(.dark) body { background: #f5f3ee; color: #111; }
+html:not(.dark) nav { background: rgba(245,243,238,0.88) !important; }
+html:not(.dark) { --bg:#f5f3ee; --bg-card:#fff; --bg-elevated:#ede9e0; --border:rgba(0,0,0,0.08); --border-med:rgba(0,0,0,0.12); --text-muted:#555; }
+html:not(.dark) .code-block { background: #f0ede6; border-color: rgba(0,0,0,0.08); }
+html:not(.dark) .code-header { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.06); }
+
+/* ─── THEME BUTTON (même style que site Focus) ─── */
+.theme-btn {
+  background: none;
+  border: 1px solid var(--border-med);
+  border-radius: 8px;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 1rem;
+  transition: border-color 0.2s, background 0.2s;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.theme-btn:hover { border-color: var(--gold); background: var(--gold-dim); }
+
 /* SCROLL BAR */
 #scroll-progress {
   position: fixed; top: 0; left: 0;
@@ -397,6 +418,12 @@ footer strong { color: var(--gold); }
 .highlight-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--gold); }
 .highlight-card p { font-size: 0.875rem; color: var(--text-muted); }
 </style>
+<script>
+  (function(){
+    var t=localStorage.getItem('focus-theme')||'dark';
+    document.documentElement.classList.toggle('dark',t==='dark');
+  })();
+</script>
 </head>
 <body>
 
@@ -417,6 +444,7 @@ footer strong { color: var(--gold); }
     <li><a href="#performance">Performance</a></li>
   </ul>
   <div class="badge-prod">Production Live</div>
+  <button class="theme-btn" id="theme-btn" aria-label="Changer le thème">🌙</button>
 </nav>
 
 <!-- HERO -->
@@ -1040,6 +1068,21 @@ const revealObs = new IntersectionObserver((entries) => {
   entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
 }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
 revealEls.forEach(el => revealObs.observe(el));
+
+// Theme toggle — même logique que le site Focus
+(function(){
+  var html = document.documentElement;
+  var btn = document.getElementById('theme-btn');
+  function apply(theme){
+    html.classList.toggle('dark', theme === 'dark');
+    btn.textContent = theme === 'dark' ? '🌙' : '☀️';
+    localStorage.setItem('focus-theme', theme);
+  }
+  apply(localStorage.getItem('focus-theme') || 'dark');
+  btn.addEventListener('click', function(){
+    apply(html.classList.contains('dark') ? 'light' : 'dark');
+  });
+})();
 </script>
 </body>
 </html>
