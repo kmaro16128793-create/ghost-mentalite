@@ -417,6 +417,53 @@ footer strong { color: var(--gold); }
 }
 .highlight-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--gold); }
 .highlight-card p { font-size: 0.875rem; color: var(--text-muted); }
+
+/* ─── PASSWORD GATE ─── */
+#ghost-gate {
+  position: fixed; inset: 0; z-index: 99999;
+  background: #000;
+  display: flex; align-items: center; justify-content: center;
+}
+#ghost-gate .gate-box {
+  text-align: center; padding: 2.5rem 2rem; max-width: 360px; width: 100%;
+}
+#ghost-gate .gate-logo {
+  font-size: 2rem; font-weight: 900; letter-spacing: -0.04em;
+  color: #fff; margin-bottom: 0.5rem;
+}
+#ghost-gate .gate-logo span { color: #C9A227; }
+#ghost-gate .gate-sub {
+  font-size: 0.8rem; color: #666; text-transform: uppercase;
+  letter-spacing: 0.1em; margin-bottom: 2rem;
+}
+#ghost-gate input {
+  width: 100%; padding: 0.85rem 1.25rem;
+  background: #0a0a0a; border: 1px solid rgba(201,162,39,0.3);
+  border-radius: 10px; color: #fff; font-size: 1rem;
+  font-family: inherit; text-align: center; letter-spacing: 0.1em;
+  outline: none; transition: border-color 0.2s;
+  margin-bottom: 1rem;
+}
+#ghost-gate input:focus { border-color: #C9A227; }
+#ghost-gate input.shake {
+  animation: gateShake 0.4s ease;
+  border-color: #ef4444;
+}
+#ghost-gate button {
+  width: 100%; padding: 0.85rem;
+  background: linear-gradient(135deg, #8B6914, #C9A227);
+  border: none; border-radius: 10px;
+  color: #000; font-size: 0.9rem; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  cursor: pointer; transition: opacity 0.2s;
+}
+#ghost-gate button:hover { opacity: 0.85; }
+#ghost-gate .gate-error {
+  font-size: 0.75rem; color: #ef4444; margin-top: 0.75rem; min-height: 1rem;
+}
+@keyframes gateShake {
+  0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)}
+}
 </style>
 <script>
   (function(){
@@ -426,6 +473,16 @@ footer strong { color: var(--gold); }
 </script>
 </head>
 <body>
+
+<div id="ghost-gate">
+  <div class="gate-box">
+    <div class="gate-logo">Ghost <span>Mentalité</span></div>
+    <div class="gate-sub">Accès membre requis</div>
+    <input type="password" id="gate-input" placeholder="Mot de passe" autocomplete="off">
+    <button onclick="checkGate()">Accéder →</button>
+    <div class="gate-error" id="gate-error"></div>
+  </div>
+</div>
 
 <div id="scroll-progress"></div>
 
@@ -1068,6 +1125,28 @@ const revealObs = new IntersectionObserver((entries) => {
   entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
 }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
 revealEls.forEach(el => revealObs.observe(el));
+
+// Password gate
+(function(){
+  var gate = document.getElementById('ghost-gate');
+  if(localStorage.getItem('ghost_access')==='ghost2026'){ gate.style.display='none'; return; }
+  document.getElementById('gate-input').addEventListener('keydown',function(e){ if(e.key==='Enter') checkGate(); });
+})();
+function checkGate(){
+  var val = document.getElementById('gate-input').value.trim();
+  var err = document.getElementById('gate-error');
+  var inp = document.getElementById('gate-input');
+  if(val==='ghost2026'){
+    localStorage.setItem('ghost_access','ghost2026');
+    document.getElementById('ghost-gate').style.display='none';
+  } else {
+    err.textContent='Mot de passe incorrect.';
+    inp.classList.remove('shake');
+    void inp.offsetWidth;
+    inp.classList.add('shake');
+    inp.value='';
+  }
+}
 
 // Theme toggle — même logique que le site Focus
 (function(){
